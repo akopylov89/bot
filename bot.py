@@ -2602,10 +2602,6 @@ if __name__ == '__main__':
         monitoringdiskio = threading.Thread(target=monitoringdiskio)
         monitoringdiskio.start()
 
-    if config.cfgmonitoringslowlog == 1:
-        monitoringslowlog = threading.Thread(target=monitoringslowlog)
-        monitoringslowlog.start()
-
     if config.cfgstakechange == 1:
         StakeChange = threading.Thread(target=StakeChange)
         StakeChange.start()
