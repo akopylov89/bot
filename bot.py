@@ -2602,18 +2602,6 @@ if __name__ == '__main__':
         monitoringdiskio = threading.Thread(target=monitoringdiskio)
         monitoringdiskio.start()
 
-    if config.cfgstakechange == 1:
-        StakeChange = threading.Thread(target=StakeChange)
-        StakeChange.start()
-
-    if config.cfgmonitoringadnlkey == 1:
-        monitoringadnlkey = threading.Thread(target=monitoringadnlkey)
-        monitoringadnlkey.start()
-
-    if config.cfgmonitoringstakesendcheck == 1:
-        monitoringstakesend = threading.Thread(target=monitoringstakesend)
-        monitoringstakesend.start()
-
     else:
         pass
     # /Alerts monitoringadnlkey
