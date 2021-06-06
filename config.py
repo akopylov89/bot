@@ -11,7 +11,7 @@ hostname = 'Server1' # Hostname used to print it in messages
 
 node_status_command = 'docker exec mina mina client status'
 restart_node_command = 'docker restart mina'
-check_sidecard_logs_command = 'docker logs -f --tail="50"  mina-sidecar'
+check_sidecard_logs_command = 'docker logs --tail=50  mina-sidecar'
 # Edit ends here
 
 

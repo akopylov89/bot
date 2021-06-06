@@ -11,8 +11,8 @@
 ### END INIT INFO
 
 NAME=tgvalidatorbot
-PIDFILE=/home/user/tontgbot/tontgbot.pid
-DAEMON=/home/user/tontgbot/bot.py
+PIDFILE=/home/andrei/bot/TONTgBot/tontgbot.pid
+DAEMON=/home/andrei/bot/TONTgBot/bot.py
 
 case "$1" in
   start)
