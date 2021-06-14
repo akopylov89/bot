@@ -95,6 +95,8 @@ lt_mainmenu =  "\U0001F3E1 " + lt_mainmenu
 #----
 node_status = _("Node status")
 node_status = "\U0001F48E " + node_status
+exect_restart_status = _("???Restart Node???")
+exect_restart_status = "\U0001F48E " + exect_restart_status
 block_producer_status = _("Block producer status")
 block_producer_status = "\U0001F48E " + block_producer_status
 restart_node = _("Restart node")
@@ -141,9 +143,10 @@ markupmina.row(mainmenu)
 
 
 restartmina = types.ReplyKeyboardMarkup()
+exect_restart = types.KeyboardButton(exect_restart_status)
 node_status_markup = types.KeyboardButton(node_status)
 mainmenu = types.KeyboardButton(lt_mainmenu)
-restartmina.row(node_status_markup)
+restartmina.row(node_status_markup, exect_restart)
 restartmina.row(mainmenu)
 
 # Get id for tg value
@@ -543,7 +546,7 @@ def command_node_status(message):
             block_height = re.search(r'Block height:\s*\d+', output)
             max_observed_block_height = re.search(r'Max observed block height:\s*\d+', output)
             max_observed_unvalidated_block_height = re.search(r'Max observed unvalidated block height:\s*\d+', output)
-            local_time = re.search(r'Local uptime:\s*\d+', output)
+            local_time = re.search(r'Local uptime:\s+.*', output)
             sync_status = re.search(r'Sync status:\s*(\w+|\w+\s*\w+)', output)
             output_string = str()
             for i in (block_height, max_observed_block_height, max_observed_unvalidated_block_height, local_time, sync_status):
@@ -584,9 +587,21 @@ def command_block_status(message):
 def command_restart_node(message):
     if message.from_user.id == config.user_id:
         try:
+            bot.send_message(config.user_id, text=_("Restart node status of {} {}. Do you really want to restart it?".format(host_ip, host_name)), reply_markup=restartmina)
+        except:
+            bot.send_message(config.user_id, text=_("{} {} Can't restart node".format(host_ip, host_name)), reply_markup=restartmina)
+    else:
+        pass
+# /Restart node
+
+
+# Restart node
+@bot.message_handler(func=lambda message: message.text == exect_restart_status)
+def command_restart_node(message):
+    if message.from_user.id == config.user_id:
+        try:
             cmd = config.restart_node_command
             output = str(subprocess.check_output(cmd, shell=True, encoding='utf-8').rstrip())
-            bot.send_message(config.user_id, text=_("Restart node status of {} {}".format(host_ip, host_name)))
             bot.send_message(config.user_id, text=output, reply_markup=restartmina)
         except:
             bot.send_message(config.user_id, text=_("{} {} Can't restart node".format(host_ip, host_name)), reply_markup=restartmina)
@@ -2394,7 +2409,7 @@ def AlertsNotificationsRam():
                         alrtprdmem +=5
                 if int(float(memload)) < config.memloadalarm:
                     alrtprdmem = 5
-                time.sleep(5)
+                time.sleep(config.alerts_time_period)
                 td += 5
             except:
                 time.sleep(5)
@@ -2425,7 +2440,7 @@ def AlertsNotificationsCPU():
                         alrtprdcpu +=5
                 if int(float(cpuutilalert)) < config.cpuutilalarm:
                     alrtprdcpu = 5
-                time.sleep(5)
+                time.sleep(config.alerts_time_period)
                 td += 5
             except:
                 time.sleep(5)
@@ -2457,7 +2472,7 @@ def AlertsNotificationsping():
                         alrtprdpng +=5
                 if int(float(pingc)) < config.pingcalarm:
                     alrtprdpng = 5
-                time.sleep(5)
+                time.sleep(config.alerts_time_period)
                 td += 5
             except:
                 time.sleep(5)
@@ -2477,7 +2492,7 @@ def monitoringnetwork():
                 currentloadn = psutil.net_io_counters()
                 bytes_sent = getattr(currentloadn, 'bytes_sent')
                 bytes_recv = getattr(currentloadn, 'bytes_recv')
-                time.sleep(1)
+                time.sleep(config.alerts_time_period)
                 currentloadn1 = psutil.net_io_counters()
                 bytes_sent1 = getattr(currentloadn1, 'bytes_sent')
                 bytes_recv1 = getattr(currentloadn1, 'bytes_recv')
@@ -2500,7 +2515,7 @@ def monitoringdiskio():
                 currentloadd = psutil.disk_io_counters()
                 bytes_read = getattr(currentloadd, 'read_bytes')
                 bytes_writ = getattr(currentloadd, 'write_bytes')
-                time.sleep(1)
+                time.sleep(config.alerts_time_period)
                 currentloadd1 = psutil.disk_io_counters()
                 bytes_read1 = getattr(currentloadd1, 'read_bytes')
                 bytes_writ1 = getattr(currentloadd1, 'write_bytes')
@@ -2528,7 +2543,7 @@ def AlertsNotificationsNodeStatus():
                 if 'synced' not in sync_status.group(0).lower():
                     current_status = sync_status.group(0).replace('Sync status:', '').strip()
                     bot.send_message(config.user_id, text="\U0001F6A8 " + _("Alert! Your node status is now '{}'!".format(current_status)), parse_mode="Markdown")
-            time.sleep(20)
+            time.sleep(config.alerts_time_period)
         except:
             time.sleep(5)
 
@@ -2541,6 +2556,7 @@ def AlertsNotificationsBlocksDifference():
             block_height = re.search(r'Block height:\s*(\d+)', output)
             max_observed_block_height = re.search(r'Max observed block height:\s*(\d+)', output)
             max_observed_unvalidated_block_height = re.search(r'Max observed unvalidated block height:\s*(\d+)', output)
+            sync_status = re.search(r'Sync status:\s*(\w+|\w+\s*\w+)', output)
             int_block_height = 0
             int_max_observed_block_height = 0
             int_max_observed_unvalidated_block_height = 0
@@ -2550,14 +2566,15 @@ def AlertsNotificationsBlocksDifference():
                 int_max_observed_block_height = int(max_observed_block_height.group(1))
             if max_observed_unvalidated_block_height:
                 int_max_observed_unvalidated_block_height = int(max_observed_unvalidated_block_height.group(1))
-            if any(abs(int_block_height - x) > config.allowed_block_difference for x in (int_max_observed_block_height, int_max_observed_unvalidated_block_height)):
+            if any(abs(int_block_height - x) > config.allowed_block_difference for x in (int_max_observed_block_height, int_max_observed_unvalidated_block_height)) \
+                    and not 'synced' not in sync_status.group(0).lower():
                 bot.send_message(config.user_id,
                                  text="\U0001F6A8 " + _("Block heights are different!\n"
                                                         "Block height: {}\n"
                                                         "Max observed block heigh: {}\n"
                                                         "Max observed unvalidated block height: {}".format(int_block_height, int_max_observed_block_height, int_max_observed_unvalidated_block_height)),
                                  parse_mode="Markdown")
-            time.sleep(20)
+            time.sleep(config.alerts_time_period)
         except:
             time.sleep(5)
 
