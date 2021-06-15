@@ -101,8 +101,6 @@ block_producer_status = _("Block producer status")
 block_producer_status = "\U0001F48E " + block_producer_status
 restart_node = _("Restart node")
 restart_node = "\U0001F48E " + restart_node
-check_sidecard_logs = _("Check sidecard logs")
-check_sidecard_logs = "\U0001F48E " + check_sidecard_logs
 
 # Default markup
 markup = types.ReplyKeyboardMarkup()
@@ -135,10 +133,9 @@ markupmina = types.ReplyKeyboardMarkup()
 node_status_markup = types.KeyboardButton(node_status)
 block_producer_status_markup = types.KeyboardButton(block_producer_status)
 restart_node_markup = types.KeyboardButton(restart_node)
-check_sidecard_logs_markup = types.KeyboardButton(check_sidecard_logs)
 mainmenu = types.KeyboardButton(lt_mainmenu)
 markupmina.row(node_status_markup, block_producer_status_markup)
-markupmina.row(restart_node_markup, check_sidecard_logs_markup)
+markupmina.row(restart_node_markup)
 markupmina.row(mainmenu)
 
 
@@ -608,22 +605,6 @@ def command_restart_node(message):
     else:
         pass
 # /Restart node
-
-# Check sidecard logs
-@bot.message_handler(func=lambda message: message.text == check_sidecard_logs)
-def command_check_logs(message):
-    if message.from_user.id == config.user_id:
-        try:
-            cmd = config.check_sidecard_logs_command
-            output = str(subprocess.check_output(cmd, shell=True, encoding='utf-8').rstrip())
-            bot.send_message(config.user_id, text=_("Sidecard logs of {} {}".format(host_ip, host_name)))
-            bot.send_message(config.user_id, text=_("Logs: {}".format(output)))
-            bot.send_message(config.user_id, text=_("End of logs"), reply_markup=markupmina)
-        except:
-            bot.send_message(config.user_id, text=_("{} {} Can't get sidecard logs".format(host_ip, host_name)), reply_markup=markupmina)
-    else:
-        pass
-# /Check sidecard logs
 
 
 @bot.callback_query_handler(func = lambda call: True)
@@ -2548,6 +2529,18 @@ def AlertsNotificationsNodeStatus():
         except:
             time.sleep(5)
 
+# Errors in sidecar logs monitoring
+def AlertsNotificationsErrorInLogs():
+    while True:
+        try:
+            cmd = config.check_sidecard_logs_command
+            output = str(subprocess.check_output(cmd, shell=True, encoding='utf-8').rstrip())
+            if 'error' in output:
+                bot.send_message(config.user_id, text="\U0001F6A8 " + _("Alert! Error found in sedecar logs!"), parse_mode="Markdown")
+            time.sleep(config.alerts_time_period)
+        except:
+            time.sleep(5)
+
 # Block difference Monitoring
 def AlertsNotificationsBlocksDifference():
     while True:
@@ -2584,6 +2577,10 @@ if __name__ == '__main__':
     if config.cfgmonitoring_node_status == 1:
         AlertsNotificationsNodeStatus = threading.Thread(target = AlertsNotificationsNodeStatus)
         AlertsNotificationsNodeStatus.start()
+
+    if config.cfgmonitoring_error_in_logs == 1:
+        AlertsNotificationsErrorInLogs = threading.Thread(target = AlertsNotificationsErrorInLogs)
+        AlertsNotificationsErrorInLogs.start()
 
     if config.cfgmonitoring_block_difference == 1:
         AlertsNotificationsBlocksDifference = threading.Thread(target = AlertsNotificationsBlocksDifference)

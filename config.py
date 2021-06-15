@@ -11,7 +11,7 @@ hostname = 'Server1' # Hostname used to print it in messages
 
 node_status_command = 'docker exec mina mina client status'
 restart_node_command = 'docker restart mina'
-check_sidecard_logs_command = 'sudo docker logs --follow mina-sidecar -f --tail 50'
+check_sidecard_logs_command = 'sudo docker logs mina-sidecar --tail=50'
 # Edit ends here
 
 
@@ -46,6 +46,7 @@ cfgmonitoringdiskio = 1 # Disk I/O Monitopring
 cfgmonitoring_node_status = 1
 
 cfgmonitoring_block_difference = 1
+cfgmonitoring_error_in_logs = 1
 allowed_block_difference = 5
 
 alerts_time_period = 300 # time slot for alerts sending
