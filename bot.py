@@ -617,7 +617,7 @@ def command_check_logs(message):
             cmd = config.check_sidecard_logs_command
             output = str(subprocess.check_output(cmd, shell=True, encoding='utf-8').rstrip())
             bot.send_message(config.user_id, text=_("Sidecard logs of {} {}".format(host_ip, host_name)))
-            bot.send_message(config.user_id, text=_(output), reply_markup=markupmina)
+            bot.send_message(config.user_id, text=output, reply_markup=markupmina)
         except:
             bot.send_message(config.user_id, text=_("{} {} Can't get sidecard logs".format(host_ip, host_name)), reply_markup=markupmina)
     else:
