@@ -2537,9 +2537,6 @@ def AlertsNotificationsErrorInLogs():
             output = str(subprocess.check_output(cmd, shell=True, encoding='utf-8').rstrip())
             if 'error' in output:
                 bot.send_message(config.user_id, text="\U0001F6A8 " + _("Alert! Error found in sedecar logs!"), parse_mode="Markdown")
-            else:
-                bot.send_message(config.user_id, text= _("No errors in sidecar logs"),
-                                 parse_mode="Markdown")
             time.sleep(config.alerts_time_period)
         except:
             time.sleep(5)
